@@ -6,6 +6,7 @@ import (
 	"golang.org/x/net/html"
 	"net/http"
 	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 )
@@ -48,24 +49,27 @@ func GetSitePages(url string, visitedPaths *[]string) error {
 	pageLinks := link.Parse(body)
 	foundPaths := make([]string, 0)
 
-	fmt.Printf("\nHit page %v\n", url)
+	//fmt.Printf("\nHit page %v\n", url)
 
 	baseUrl := strings.Split(url, "/")[0] + "//" + strings.Split(url, "/")[2] + "/"
 	domain := strings.Split(url, "/")[2]
 	domain = strings.Split(domain, "www.")[1]
 
+	skipExt := map[string]bool{
+		".jpg": true, ".jpeg": true, ".png": true, ".gif": true,
+		".svg": true, ".pdf": true, ".doc": true, ".zip": true,
+	}
+
 	for path, _ := range pageLinks {
 		// skips out of domains sites with https protocol
 		if strings.HasPrefix(path, "https://") && !strings.Contains(path, domain) {
-			println("skipping: " + path + " is not with " + domain)
+			//println("skipping: " + path + " is not with " + domain)
 			continue
 		}
 		// skips out of domains sites with http protocol
 		if strings.HasPrefix(path, "http://") && !strings.Contains(path, domain) {
 			continue
 		}
-
-		//println("found: " + path)
 
 		// skips non-page links
 		if strings.HasPrefix(path, "mailto") ||
@@ -75,7 +79,8 @@ func GetSitePages(url string, visitedPaths *[]string) error {
 		}
 
 		// skip non-html files
-		if !strings.HasSuffix(path, "/") && !strings.HasSuffix(path, ".html") {
+		ext := strings.ToLower(filepath.Ext(path))
+		if skipExt[ext] {
 			continue
 		}
 
@@ -84,21 +89,22 @@ func GetSitePages(url string, visitedPaths *[]string) error {
 			continue
 		}
 
-		// skip subdomains
-		if !strings.HasPrefix(path, baseUrl) {
-			continue
-		}
-
 		if path[0] == '/' {
 			path = path[1:]
 			path = baseUrl + path
+		}
+
+		// skip subdomains
+		if !strings.HasPrefix(path, baseUrl) {
+			//println("skipping: " + path)
+			continue
 		}
 
 		if slices.Contains(*visitedPaths, path) {
 			continue
 		}
 
-		println("found valid: " + path)
+		//println("found valid: " + path)
 		foundPaths = append(foundPaths, path)
 	}
 
