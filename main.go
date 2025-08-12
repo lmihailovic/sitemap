@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"sort"
 	"strings"
 )
 
@@ -49,7 +50,7 @@ func GetSitePages(url string, visitedPaths *[]string) error {
 	pageLinks := link.Parse(body)
 	foundPaths := make([]string, 0)
 
-	//fmt.Printf("\nHit page %v\n", url)
+	fmt.Printf("\nHit page %v\n", url)
 
 	baseUrl := strings.Split(url, "/")[0] + "//" + strings.Split(url, "/")[2] + "/"
 	domain := strings.Split(url, "/")[2]
@@ -60,7 +61,7 @@ func GetSitePages(url string, visitedPaths *[]string) error {
 		".svg": true, ".pdf": true, ".doc": true, ".zip": true,
 	}
 
-	for path, _ := range pageLinks {
+	for path, text := range pageLinks {
 		// skips out of domains sites with https protocol
 		if strings.HasPrefix(path, "https://") && !strings.Contains(path, domain) {
 			//println("skipping: " + path + " is not with " + domain)
@@ -88,6 +89,13 @@ func GetSitePages(url string, visitedPaths *[]string) error {
 		if path == ".." {
 			continue
 		}
+
+		if path == "" {
+			println("blank path, link text: " + text)
+			continue
+		}
+
+		//println("found: " + path)
 
 		if path[0] == '/' {
 			path = path[1:]
@@ -133,6 +141,8 @@ func main() {
 	}
 
 	fmt.Println("Found pages:")
+
+	sort.Strings(visited)
 
 	for _, page := range visited {
 		fmt.Println(page)
