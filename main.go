@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/lmihailovic/link/parse"
+	"github.com/lmihailovic/link"
 	"golang.org/x/net/html"
 	"net/http"
 	"os"
@@ -50,17 +50,44 @@ func GetSitePages(url string, visitedPaths *[]string) error {
 
 	fmt.Printf("\nHit page %v\n", url)
 
+	baseUrl := strings.Split(url, "/")[0] + "//" + strings.Split(url, "/")[2] + "/"
+	domain := strings.Split(url, "/")[2]
+	domain = strings.Split(domain, "www.")[1]
+
 	for path, _ := range pageLinks {
-		if strings.HasPrefix(path, "https://") ||
-			strings.HasPrefix(path, "http://") ||
-			strings.HasPrefix(path, "mailto") ||
-			strings.HasPrefix(path, "tel") ||
-			strings.HasPrefix(path, "#") ||
-			(strings.Contains(path, ".") && !strings.HasSuffix(path, ".html")) {
+		// skips out of domains sites with https protocol
+		if strings.HasPrefix(path, "https://") && !strings.Contains(path, domain) {
+			println("skipping: " + path + " is not with " + domain)
+			continue
+		}
+		// skips out of domains sites with http protocol
+		if strings.HasPrefix(path, "http://") && !strings.Contains(path, domain) {
 			continue
 		}
 
-		baseUrl := strings.Split(url, "/")[0] + "//" + strings.Split(url, "/")[2] + "/"
+		//println("found: " + path)
+
+		// skips non-page links
+		if strings.HasPrefix(path, "mailto") ||
+			strings.HasPrefix(path, "tel") ||
+			strings.HasPrefix(path, "#") {
+			continue
+		}
+
+		// skip non-html files
+		if !strings.HasSuffix(path, "/") && !strings.HasSuffix(path, ".html") {
+			continue
+		}
+
+		// self-explanatory
+		if path == ".." {
+			continue
+		}
+
+		// skip subdomains
+		if !strings.HasPrefix(path, baseUrl) {
+			continue
+		}
 
 		if path[0] == '/' {
 			path = path[1:]
@@ -71,11 +98,7 @@ func GetSitePages(url string, visitedPaths *[]string) error {
 			continue
 		}
 
-		if path == ".." {
-			continue
-		}
-
-		//println("found: " + path)
+		println("found valid: " + path)
 		foundPaths = append(foundPaths, path)
 	}
 
