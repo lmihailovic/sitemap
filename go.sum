@@ -1,4 +1,6 @@
 github.com/lmihailovic/link v0.1.0 h1:u+lUNLgYz8tk9kw6oY+eKCQV1hLbnqbH9Z6mYCt1z3g=
 github.com/lmihailovic/link v0.1.0/go.mod h1:vrKYWYB4J/xh+PYlqg55OLGXQDs9W7EA7BAkHnsUcBI=
+github.com/lmihailovic/link v0.1.1 h1:r1SL7WN8FBqIo0ymNpUQxOKw9lQF7UWAMZPkkWxwpAQ=
+github.com/lmihailovic/link v0.1.1/go.mod h1:vrKYWYB4J/xh+PYlqg55OLGXQDs9W7EA7BAkHnsUcBI=
 golang.org/x/net v0.43.0 h1:lat02VYK2j4aLzMzecihNvTlJNQUq316m2Mr9rnM6YE=
 golang.org/x/net v0.43.0/go.mod h1:vhO1fvI4dGsIjh73sWfUVjj3N7CA9WkKJNQm2svM6Jg=
