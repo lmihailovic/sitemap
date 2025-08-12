@@ -6,6 +6,7 @@ import (
 	"golang.org/x/net/html"
 	"net/http"
 	"os"
+	"slices"
 	"strings"
 )
 
@@ -38,39 +39,73 @@ func GetPageHtml(url string) (*html.Node, error) {
 	return body, nil
 }
 
-func GetSitePages(url string) ([]string, error) {
+func GetSitePages(url string, visitedPaths *[]string) error {
 	body, err := GetPageHtml(url)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	pageLinks := link.Parse(body)
-	paths := make([]string, 0)
+	foundPaths := make([]string, 0)
+
+	fmt.Printf("\nHit page %v\n", url)
 
 	for path, _ := range pageLinks {
-		if strings.HasPrefix(path, "mailto") ||
+		if strings.HasPrefix(path, "https://") ||
+			strings.HasPrefix(path, "http://") ||
+			strings.HasPrefix(path, "mailto") ||
 			strings.HasPrefix(path, "tel") ||
-			strings.HasPrefix(path, "#") {
-			continue
-		} else if strings.Contains(path, ".") {
+			strings.HasPrefix(path, "#") ||
+			(strings.Contains(path, ".") && !strings.HasSuffix(path, ".html")) {
 			continue
 		}
-		subUrl := url + path
-		paths = append(paths, subUrl)
+
+		baseUrl := strings.Split(url, "/")[0] + "//" + strings.Split(url, "/")[2] + "/"
+
+		if path[0] == '/' {
+			path = path[1:]
+			path = baseUrl + path
+		}
+
+		if slices.Contains(*visitedPaths, path) {
+			continue
+		}
+
+		if path == ".." {
+			continue
+		}
+
+		//println("found: " + path)
+		foundPaths = append(foundPaths, path)
 	}
 
-	return paths, nil
+	*visitedPaths = append(*visitedPaths, url)
+	for _, path := range foundPaths {
+		if slices.Contains(*visitedPaths, path) {
+			continue
+		}
+
+		err := GetSitePages(path, visitedPaths)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func main() {
 	url := os.Args[1]
 
-	pages, err := GetSitePages(url)
+	var visited []string
+	err := GetSitePages(url, &visited)
 	if err != nil {
 		panic(err)
 	}
 
-	for _, page := range pages {
+	fmt.Println("Found pages:")
+
+	for _, page := range visited {
 		fmt.Println(page)
 	}
 
