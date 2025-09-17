@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/lmihailovic/link"
-	"golang.org/x/net/html"
 	"net/http"
 	"os"
 	"path/filepath"
 	"slices"
 	"sort"
 	"strings"
+
+	"github.com/lmihailovic/link"
+	"golang.org/x/net/html"
 )
 
 /*
